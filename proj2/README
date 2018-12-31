@@ -1,0 +1,195 @@
+A. Title of the Homework and Author
+Author: Daniel Lee
+Project: Gerp - It's Like grep But Something Is Off 
+
+B. Purpose of the program
+The program builds a search engine tool where the client
+can look for the instances of word in all files, given 
+the directory
+
+C. Acknowledgements
+Shout out to Daniel, the T.A
+
+D. Files provided
+
+Query.h and Query.cpp: 
+Query.h declares the private and public members of the
+Query class. The Query.cpp contains the implementation 
+of the public and private functions of the class. 
+
+This class iterates through the directory and stores all
+words in a hashtable of the Hash class. Then it executes
+a series of command depending on what the client inputs 
+into the command. 
+
+Hash.h and Hash.cpp: 
+
+The Hash.h contains the declation of public and private members. 
+The Hash.cpp contains the implementation of the public and
+private functions. This class acts as a database, containing 
+all the words in the directory passed in by the client and 
+relevant information. 
+
+testhash.cpp and testquery.cpp:
+
+Testhash.cpp tests the implementation of the Hash class. 
+testquery.cpp tests the implementation of the Query class. 
+test.query.cpp acts as a mock interface of the whole program. 
+
+main.cpp: 
+
+Main.cpp is the true interface where the client passes in a directory
+and words he or she wants the program to search for. 
+
+E. How to compile and run program. 
+
+To compile the hash class, pass in make testhash. To run and test the 
+implementation, type in ./testhash. To truly test the hash class, the
+testhash.cpp should have function calls and other necessary lines of code
+to test the class. 
+
+To compile the query class, pass in make testquery. To run and test the 
+implementation, type in ./testquery and a directory. The testquery should
+declare an object of the query class and call the run function, which allows
+the interaction between the client and the implementation. 
+
+To actually compile the search engine program, type in make gerp. Like, the 
+testquery command, type in ./gerp and a directory. This is truly the interface
+of the program. 
+
+F. Architectural Overview 
+
+The gerp is comprised of two classes. In the query class, there is an 
+object of the FSTree class. This class will store the directory and its 
+sub-directories and files as a tree. Also an object of DirNode class is
+created and is pointed to the root of the tree. This will allow public 
+member function, treetraversal to traverse through the directory. The 
+Query class also has an object of the Hashtable class. This allows the 
+passing of information from tree to hash table by giving the Query class 
+implementation access to the public member functions of the Hash class. 
+
+G. Outline of data structures
+
+The 3 data structures used in this class are a hash table of linked lists,
+vectors, and a tree. 
+
+The hash table was used for the sole reason that it will give us constant
+access to the filepath, line number, and the sentence the query appears. 
+
+But at each index, a linked list of structs is stored. Each struct contains
+the lower_cased version of a word, the version of the word in the file, 
+a line number, and two indices, one for the index in the vector of sentences
+(vector is called sentence) and the other for the index in the vector of
+filepaths(vector is called filepath). 
+
+One important thing to note is that the hash table takes a key that is a 
+lower case version of a word. This makes the hash table flexible for both
+print case insensitive and print case sensitive. Although the key is the 
+lower case version of a word, the struct also contains the original version
+of the word that appears in the file. 
+
+If print insensitive is desired, only the key is compared to the query.
+Id print sensitive is desired, the program finds the index based on the lower
+case version of the query but compares the original form of each word of every 
+struct to the query.
+
+A tree was used to store the subdirectories and files of the directory passed
+in by the client. The tree allows us to recursively iterate through the 
+directory in a more efficient and coherent manner. If one looks at the FSTree 
+implementation, each node of the tree contains a vector of files and a vector
+of pointers, which point to other subdirectories. 
+
+Lastly, 3 vectors were used for this assignment. The reasons behind the usage
+of three vectors were to not store the filepath and sentence for every struct.
+Second, testing for duplicates was much easier. 
+
+A lot of memory would be used and time complexity would be slow if the sentence
+was stored for every word in the sentence and the filepath was stored for every
+word in a file. What the usage of vector does is that the filepath can be 
+stored once per file in the vector filepath and the sentence can be stored once 
+for every words in that sentence(The vector sentence is used for this function)
+. All the struct needs now are the index in which the correct filepath is
+stored and the index in which the correct sentence is stored.
+
+The correct indices will be determined like this. Everytime the execute file is 
+called, a filepath will be inserted to the vector, filepath for all the words 
+in that file. So the index of the first opened file will be 0, which is
+the size of the vector filepath - 1! The second filepath will be at index 1
+and so on. The same idea applies as each sentence in the file is read. The very
+first sentence read will be in index 0 of the sentence vector. Note that
+the line number is not this index. The line number is the variable count,
+which is passed as an argument to the insert function, called in the execute
+files function. 
+
+In both print functions, getvalue is called. Getvalue receives an integer,
+which is the index of the lower case version of the query. Then it accesses
+the filepath at the integer path of the vector, filepath, and accesses the 
+sentence at the integer concatenate of the vector, sentence. It concatenates
+the filepath, the line number, and the sentence and returns it as a string. 
+
+The edge case of duplicates is solved by having the third vector, 
+sentence_print. Sentence_print is a vector of booleans. Every time a sentence
+is read, it inserts a boolean = false into the vector. Thus, the vector
+sentence_print and sentence are identical. sentence_print[0] corresponds to 
+the sentence at sentence[0], which is the first sentence that is read. 
+
+In print, if a sentence has the instance of the query and the boolean at
+the index the sentence is stored is false, then the sentence is printed.
+Once printed, the boolean at the same index in sentence_print is set to 
+true. This change of booleans prevents the program from printing the lines
+again regardless if another instance appears on the same sentence. 
+
+After each word passed into the query is passed, all the values of the 
+vector is initialized to false so the lines can be available for print 
+for the next query. 
+
+This way is much more efficient and flexible than using two pointers to 
+iterate through a linked list.
+
+To account for the type of print, the Query class has a boolean, sensitivity,
+which is true if @i is passed and is false if it isn't passed. The program
+takes a line of commands and takes the command as one line and parses it.
+As a command is processed, a command is executed. The command function 
+returns a boolean. It returns true if the client has inputed @q or @quit. 
+If not, false is returned. This boolean helps the program to either continue
+the program or terminate the program. 
+
+Another test case was if the program reads in a string of just non-alpha-
+numeric characters from a file or from the client. To account for such
+string from the client, I had a check_EmptyString function that returns a
+boolean. This function is called after the query is processed through
+stripNonAlphaNum. The condition is if the word length is 1 and the word
+is not alphanumeric. Then the program should print out not found. 
+
+When reading from a file, the program is not going to insert an empty string.
+We can check for this by checking if the first character of the word is
+alpha-numeric. If it's not, then the word is an empty string. 
+
+H. Testing methods
+
+In implementing this program, I implemented the hash table structure first. 
+I used testhash.cpp to test the insert function, as it is the function that
+is critical in the functionality of the hash table. I also used multiple stubs
+such as getCapacity, getCurrentitems, and print to make sure my capacity and
+currentitems were updating properly. 
+
+When testing the query class, I created a testquery.cpp that tests the program.
+I first tested the interface and made sure Query was printing when it was 
+suppose to. Since the treeTraversal was already implemented before phase 3, 
+all I had to change was that the treetraversal actually processes each file. 
+
+To test the functionality of the program I basically created a testdirectory,
+which is a tree with multiple subdirectories and each subdirectory has multiple
+files. I would purposely put multiple instances of same word on one line and
+I would mix a couple of non-alphanumeric characters and letters to contruct 
+strings. 
+
+To test the time complexity, I obviously ran the three gutenberg files. 
+
+Once I met the time complexity requirement and I felt confident in my 
+implementation, I used the comparing output method that was specified.
+I would sort and then type diff to see if there were any differences.  
+
+
+
+
